@@ -1,0 +1,19 @@
+services:
+  ob-profile-proxy:
+    build: .
+    container_name: ob-profile-proxy
+    restart: unless-stopped
+    environment:
+      - UPSTREAM=${UPSTREAM:-https://registration-relay.beeper.com}
+      - BIND=0.0.0.0
+      - PORT=8080
+    volumes:
+      - ./data:/data        # registry.json: per-device identities. NEVER delete.
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: ob-cloudflared
+    restart: unless-stopped
+    command: tunnel run --token ${TUNNEL_TOKEN}
+    depends_on:
+      - ob-profile-proxy
